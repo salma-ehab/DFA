@@ -21,6 +21,15 @@ a 0 b
 a 1 b
 b 1 b
 b 0 a
+
+q0 1 q1
+q0 0 q2
+q1 0 q3
+q1 1 q0
+q2 0 q1
+q2 1 q1
+q3 0 q2
+q3 1 q0
 '''
 
 class Node:
@@ -47,6 +56,7 @@ class Graph:
             self._Gr.add_node(line[0])
             self._Gr.add_node(line[2])
 
+
             if self._Gr.has_edge(line[0],line[2]):
                 oldWeight = nx.get_edge_attributes(self._Gr,"label")
                 weightLabel = line[1]+","+oldWeight[(line[0],line[2])]
@@ -54,7 +64,7 @@ class Graph:
 
             else:
                 if line[0] == line[2]:
-                    self._Gr.add_edge(line[0], line[2], label="         "+line[1])
+                    self._Gr.add_edge(line[0], line[2], label="               "+line[1])
 
                 else:
                     self._Gr.add_edge(line[0], line[2], label=line[1])
@@ -88,6 +98,7 @@ class Graph:
 
     def update(self, frames, a):
         a.clear()
+        self._colors = ['blue'] * self._Gr.number_of_nodes()
 
         if frames <len(self._l):
             i = 0
@@ -107,11 +118,15 @@ class Graph:
 
             nx.draw_networkx(self._Gr, pos=self._layout, with_labels=True, node_color=self._colors,
                              ax=a,connectionstyle="Arc3, rad=0.1")
-            nx.draw_networkx_edge_labels(self._Gr, pos=self._layout, edge_labels=self.labels, ax=a,label_pos=0.15)
+
+
+            nx.draw_networkx_edge_labels(self._Gr, pos=self._layout, edge_labels=self.labels, ax=a,label_pos=0.15,bbox=dict(facecolor="skyblue", edgecolor='black', boxstyle='round,pad=0.2'))
             a.set_title("Frame {}".format(frames))
 
         if frames == len(self._l) -1:
             self._colors = ['blue'] * self._Gr.number_of_nodes()
+
+
 
 
     def anim(self):
@@ -121,7 +136,7 @@ class Graph:
         canvas = FigureCanvasTkAgg(fig, frm_left)
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0)
-        ani = animation.FuncAnimation(fig, self.update, frames=len(self._l), interval=400,fargs={ax})
+        ani = animation.FuncAnimation(fig, self.update, frames=len(self._l), interval=700,fargs={ax})
         canvas = FigureCanvasTkAgg(fig, frm_left)
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0)
@@ -136,7 +151,7 @@ class Graph:
 def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alphabet,user_states,user_sequence):
   inputTransitionTable = user_transitionTable.get("1.0", "end-1c").split('\n')
   inputInitialState = user_initialState.get("1.0", "end-1c")
-  inputFinalState= user_finalState.get("1.0", "end-1c").split(' ')
+  inputFinalStates= user_finalState.get("1.0", "end-1c").split(' ')
   inputAlphabet = user_alphabet.get("1.0", "end-1c").split(' ')
   inputStates = user_states.get("1.0", "end-1c").split(' ')
   inputSequence = user_sequence.get("1.0", "end-1c").split(' ')
@@ -155,7 +170,7 @@ def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alph
       if item == inputInitialState:
           initialState = True
 
-      for x in inputFinalState:
+      for x in inputFinalStates:
           if item == x:
               finalState = True
 
@@ -163,11 +178,6 @@ def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alph
       tk.messagebox.showinfo("Error", "Check that the final state exists in the state set")
   if initialState == False:
       tk.messagebox.showinfo("Error", "Check that the initial state exists in the state set")
-
-
-  if len(formatted_input) != len(inputStates)*len(inputAlphabet):
-      transitionErrorFree = False
-      tk.messagebox.showinfo("Error", "Check that each state has two transitions")
 
   for line in formatted_input:
       if line[0] not in inputStates or line[2] not in inputStates:
@@ -187,7 +197,7 @@ def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alph
   for item in transitionDict:
      if len(transitionDict[item]) != len(inputAlphabet):
          transitionErrorFree = False
-         tk.messagebox.showinfo("Error","State " + str(item) + " doesn't have right number of transitions ")
+         tk.messagebox.showinfo("Error","State " + str(item) + " doesn't have right transitions ")
          break
 
      element = transitionDict[item][0]
@@ -201,7 +211,7 @@ def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alph
 
   if initialState == True and finalState == True and transitionErrorFree == True:
           dfs_inst = Graph(formatted_input)
-          dfs_inst.trace(inputInitialState,inputFinalState,inputSequence,formatted_input)
+          dfs_inst.trace(inputInitialState,inputFinalStates,inputSequence,formatted_input)
           dfs_inst.anim()
           lbl_bottom['text'] = dfs_inst.solution
 
@@ -248,7 +258,7 @@ lbl_states = tk.Label(master=frm_middle,width=15,height=1, text="Transitions", b
 txt = tk.Text(master=frm_middle, height=20, width=18,font=("Verdana",12),fg="black")
 
 lbl_initialState.grid(row=0, column=0,pady=0)
-txtInitialState.grid(row=1, column=0, pady=(5,20))
+txtInitialState.grid(row=1, column=0, pady=(5,24))
 lbl_states.grid(row=2, column=0, padx=8, pady=8)
 txt.grid(row=3, column=0, pady=1)
 
@@ -271,7 +281,7 @@ canvas.draw()
 canvas.get_tk_widget().grid(row=1, column=0,padx=30)
 
 frm_right.grid(row=0, column=2, padx=5, pady=5)
-frm_middle.grid(row=0, column=1, padx=5, pady=5)
+frm_middle.grid(row=0, column=1, padx=5, pady=(5,15))
 frm_left.grid(row=0, column=0, padx=5, pady=5)
 
 root.mainloop()
