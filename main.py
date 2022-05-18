@@ -193,6 +193,11 @@ def onClickRun(user_initialState,user_finalState, user_transitionTable,user_alph
       transitionDict[line[0]] += line[1]
       print("transition dictionary",transitionDict)
 
+  for x in inputSequence:
+      if x not in inputAlphabet:
+          transitionErrorFree = False
+          tk.messagebox.showinfo("Error", "The alphabet in the sequence don't match with the alphabet set")
+          break
 
   for item in transitionDict:
      if len(transitionDict[item]) != len(inputAlphabet):
